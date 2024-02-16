@@ -1,0 +1,108 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="team_A_arm">
+
+    
+    <xacro:arg name="using_eseries" default="true"/>
+    <xacro:arg name="kinematics_config" default="$(find chesslab_setup)/config/my_robot_calibration.yaml"/>
+  
+    <xacro:if value="$(arg using_eseries)">
+	<xacro:include filename="$(find ur_e_description)/urdf/ur3e.urdf.xacro" />
+        <!-- robot defined with coarse collision models and gripper with fine collision models-->
+        <xacro:ur3e_robot prefix="team_A_" joint_limited="true" kinematics_file="${load_yaml('$(arg kinematics_config)')}"/> <!--precise_collision="false" /-->
+    </xacro:if>
+    <xacro:unless value="$(arg using_eseries)">
+	<xacro:include filename="$(find ur_description)/urdf/ur3.urdf.xacro" />
+        <!-- robot defined with coarse collision models and gripper with fine collision models-->
+        <xacro:ur3_robot prefix="team_A_" joint_limited="true" kinematics_file="${load_yaml('$(arg kinematics_config)')}"/> <!--precise_collision="false" /-->
+    </xacro:unless>
+        
+        <xacro:include filename="$(find robotiq_2f_model)/model/robotiq_2f_85.urdf.xacro" />
+	<xacro:include filename="$(find robotiq_2f_model)/model/robotiq_ur_coupler.urdf.xacro" />
+
+	<link name="world" />
+
+        <!-- Fixed base transformation for the robot defined as a fixed joint. Values to be obtained by calibration -->
+	<joint name="team_A_calibration_joint" type="fixed">
+		<parent link="world" />
+		<child link="team_A_base_link"/>
+		<origin xyz="0.37 0.0 -0.004" rpy="0.0 0.0 1.5708" />
+	</joint>
+
+        <!-- robot and gripper definition and coupling -->
+	<xacro:robotiq_ur_coupler name="team_A_coupler_link" parent="team_A_tool0" />
+	<xacro:robotiq_2f_85 name="team_A_gripper" with_pads="true" parent="team_A_coupler_link" precise_collision="true" adaptive_transmission="false">
+		<origin xyz="0 0 0" rpy="0 0 ${0.5*pi}" />
+	</xacro:robotiq_2f_85>
+
+        <!-- Gazebo contact parameters for gripper pad-->
+	<gazebo reference="team_A_gripper_right_pad">
+                <!--kp>10000.0</kp>
+		<kd>1.0</kd>
+		<mu1>0.8</mu1>
+		<mu2>0.8</mu2>
+		<minDepth>0.001</minDepth-->
+            <collision>
+            <surface>
+                <friction>
+                <torsional>
+                    <coefficient>10.0</coefficient>
+                    <use_patch_radius>true</use_patch_radius>
+                    <patch_radius>0.05</patch_radius>
+                </torsional>
+                </friction>
+                <contact>
+                <poissons_ratio>0.5</poissons_ratio>
+                <elastic_modulus>1e8</elastic_modulus>
+                </contact>
+            </surface>
+            </collision>
+            <mu1>10</mu1>
+            <mu2>10</mu2>
+            <maxVel>1</maxVel>
+            <kp>1e15</kp>
+            <kd>1e13</kd>
+            <fdir1>0 0 1</fdir1>
+            <minDepth>0.001</minDepth>
+            <maxContacts>100</maxContacts>
+            <material>Gazebo/RedBright</material>
+	</gazebo>
+
+        <!-- Gazebo contact parameters for gripper pad-->
+	<gazebo reference="team_A_gripper_left_pad">
+                <!--kp>10000.0</kp>
+		<kd>1.0</kd>
+		<mu1>0.8</mu1>
+		<mu2>0.8</mu2>
+		<minDepth>0.001</minDepth-->
+            <collision>
+            <surface>
+                <friction>
+                <torsional>
+                    <coefficient>10.0</coefficient>
+                    <use_patch_radius>true</use_patch_radius>
+                    <patch_radius>0.05</patch_radius>
+                </torsional>
+                </friction>
+                <contact>
+                <poissons_ratio>0.5</poissons_ratio>
+                <elastic_modulus>1e8</elastic_modulus>
+                </contact>
+            </surface>
+            </collision>
+            <mu1>10</mu1>
+            <mu2>10</mu2>
+            <maxVel>1</maxVel>
+            <kp>1e15</kp>
+            <kd>1e13</kd>
+            <fdir1>0 0 1</fdir1>
+            <minDepth>0.001</minDepth>
+            <maxContacts>100</maxContacts>
+            <material>Gazebo/RedBright</material>
+	</gazebo>
+
+	<gazebo>
+		<plugin name="team_A_arm_hwiface" filename="libgazebo_ros_control.so">
+			<robotNamespace>team_A_arm</robotNamespace>
+		</plugin>
+	</gazebo>
+</robot>

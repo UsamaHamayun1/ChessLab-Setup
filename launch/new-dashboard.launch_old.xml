@@ -1,0 +1,157 @@
+<?xml version="1.0"?>
+<launch>
+        <!-- choose whether to visualize -->
+        <arg name="team_A_enabled" default="false" />
+        <arg name="camera_enabled" default="false" />
+        
+        <!-- switch between real and simulated.. or simply display -->
+        <arg name="load_real" default="false" />
+        <arg name="load_sim" default="false" />
+        
+        <!-- load additional services -->
+        <arg name="load_services" default="false" />
+        <arg name="load_cam_calib" default="false" />
+
+        <!-- choose whether to use the trajectory controller with the gripper or use a separete controller for the gripper -->
+        <arg name="controller_with_gripper" default="false" />
+
+        <!-- choose whether to visualize -->
+        <arg name="show_rviz" default="false" />
+        
+        <!-- choose GUI control options -->
+        <arg name="joint_gui" default="false" />
+        <arg name="joint_gui_controller" default="false" />
+        
+        <!-- Gazebo starts PAUSED by default -->
+        <!-- This way we can fix the joint values when spawned -->
+        <arg name="paused" default="true" />        
+        <!--Initial Joint Configurations for spawninnig in Gazebo-->
+        <!--arg name="team_A_shoulder_pan_joint_initial_value" default="0.0" />
+        <arg name="team_A_shoulder_lift_joint_initial_value" default="0.0" />
+        <arg name="team_A_elbow_joint_initial_value" default="-1.0" />
+        <arg name="team_A_wrist_1_joint_initial_value" default="0.0" />
+        <arg name="team_A_wrist_2_joint_initial_value" default="0.0" />
+        <arg name="team_A_wrist_3_joint_initial_value" default="0.0" />
+        <arg name="team_A_gripper_right_driver_joint_initial_value" default="0.5" /-->
+        
+                
+        <arg name="team_A_shoulder_pan_joint_initial_value" default="-1.89" />
+        <arg name="team_A_shoulder_lift_joint_initial_value" default="-1.44" />
+        <arg name="team_A_elbow_joint_initial_value" default="-2.14" />
+        <arg name="team_A_wrist_1_joint_initial_value" default="-1.15" />
+        <arg name="team_A_wrist_2_joint_initial_value" default="1.60" />
+        <arg name="team_A_wrist_3_joint_initial_value" default="-1.95" />
+        <arg name="team_A_gripper_right_driver_joint_initial_value" default="0.55" />
+
+                
+        <!-- configuration of the simulation -->
+        <group if="$(arg load_sim)">
+            <include file="$(find gazebo_ros)/launch/empty_world.launch">
+                <arg name="world_name" value="$(find chesslab_setup)/worlds/flat_chesslab.world"/>
+                <arg name="paused" value="$(arg paused)" />
+                <arg name="gui" value="true" />
+            </include> 
+        </group>
+        
+        <!-- Define the chess_frame where chess objects and cameras are referenced -->
+        <node pkg="tf2_ros" type="static_transform_publisher" name="chess_frame_broadcaster" args="0.0 0.0 0.0  0.0 0.0 0.0 world chess_frame" />
+                
+        <!-- load all controllers configurations -->
+        <rosparam file="$(find chesslab_setup)/config/new_controllers.yaml" command="load"/>
+        
+        <!-- TEAM A LAUNCH -->
+        <group if="$(arg team_A_enabled)" ns="team_A_arm">
+            <!-- send robot urdf to param server -->
+            <param name="robot_description" command="$(find xacro)/xacro $(find chesslab_setup)/robot/team_A_arm_gripper.urdf.xacro" />
+            <!-- joint and state publishers -->
+            <param name="publish_frequency" value="100"/>
+            <group if="$(arg joint_gui)">
+                <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" />
+            </group>
+            <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+            <!-- arm controllers -->
+            <group unless="$(arg joint_gui)">
+                <node if="$(arg controller_with_gripper)" name="load_and_start_controller" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="joint_state_controller joint_trajectory_controller_with_gripper" />
+                <node unless="$(arg controller_with_gripper)" name="load_and_start_controller" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="joint_state_controller joint_trajectory_controller gripper_controller" />
+            </group>
+            <group if="$(arg joint_gui_controller)">
+                <node name="team_A_arm_gui" pkg="rqt_gui" type="rqt_gui" respawn="false" args="--perspective-file $(find chesslab_setup)/config/team_A_all.perspective" output="screen" />
+            </group> 
+            <!-- spawn for simulation -->
+            <group if="$(arg load_sim)">            
+                <group if="$(arg team_A_enabled)">
+                    <node name="spawn_team_A_arm_model" pkg="gazebo_ros" type="spawn_model" 
+                          args="-urdf -param /team_A_arm/robot_description -model team_A_arm 
+                                -J team_A_shoulder_pan_joint $(arg team_A_shoulder_pan_joint_initial_value)
+                                -J team_A_shoulder_lift_joint $(arg team_A_shoulder_lift_joint_initial_value)
+                                -J team_A_elbow_joint $(arg team_A_elbow_joint_initial_value)
+                                -J team_A_wrist_1_joint $(arg team_A_wrist_1_joint_initial_value)
+                                -J team_A_wrist_2_joint $(arg team_A_wrist_2_joint_initial_value)
+                                -J team_A_wrist_3_joint $(arg team_A_wrist_3_joint_initial_value)
+                                -J team_A_gripper_right_driver_joint $(arg team_A_gripper_right_driver_joint_initial_value)" respawn="false" output="screen" />
+                </group>
+            </group>
+            <!-- arm hwiface -->
+            <group if="$(arg load_real)">
+                <node name="ur_hardware_interface" pkg="ur_modern_driver" type="ur_driver" output="screen">
+                    <param name="robot_ip_address" type="str" value="192.168.1.10" />
+                    <param name="reverse_port" value="50001" />
+                    <param name="min_payload" type="double" value="0.0"/>
+                    <param name="max_payload" type="double" value="3.0"/>
+                    <param name="max_velocity" type="double" value="10.0"/>
+                    <param name="use_ros_control" type="bool" value="True"/>
+                    <param name="servoj_gain" type="double" value="750" />
+                    <param name="prefix" value="team_A" />
+                    <param name="base_frame" type="str" value="team_A_base_link"/>
+                    <param name="tool_frame" type="str" value="team_A_tool0_controller"/>
+                </node>
+            </group>
+            <!-- gripper hwiface -->
+            <group if="$(arg load_real)">
+                <node name="gripper_hardware_interface" pkg="robotiq_2f_hw_usb" type="robotiq_2f_hw_usb_node" respawn="false" output="screen">
+                    <param name="port" type="str" value="/dev/ttyUSB0" />
+                    <param name="server_id" type="int" value="9" />
+                    <param name="name" type="str" value="team_A_arm" />
+                    <!--param name="name" type="str" value="team_A_gripper" /-->
+		</node>
+            </group>
+        </group>
+                
+        <!-- CAMERAS -->
+        <group if="$(arg camera_enabled)">
+            <group ns="camera_right">
+                    <!-- send robot urdf to param server -->
+                    <param name="robot_description" command="$(find xacro)/xacro $(find chesslab_setup)/robot/camera_right.urdf.xacro" />
+                    <param name="publish_frequency" value="100"/>
+                    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+            </group>
+            <!-- spawn for simulation -->
+            <group if="$(arg load_sim)">  
+                <node name="spawn_camera_model_right" pkg="gazebo_ros" type="spawn_model" args="-urdf -param camera_right/robot_description -model camera_right" respawn="false" output="screen" />
+            </group>
+            <!-- launches the image rectification  always + calibration if enabled + real cameras if enabled -->
+            <include file="$(find realsense_lab)/launch/two_realsense_calibration.launch.xml">
+                <arg name="load_calib" value="$(arg load_cam_calib)" />
+                <arg name="real" value="$(arg load_real)" />
+                <arg name="load_rviz" value="false" />
+            </include>
+        </group>
+        
+        <!-- rviz: opens config file with cameras if they are enabled -->
+        <group if="$(arg show_rviz)">
+            <group unless="$(arg camera_enabled)">
+                <node name="chess_rviz" pkg="rviz" type="rviz" respawn="false" args="-d $(find chesslab_setup)/config/chesslab_simple.rviz" output="screen"/>
+            </group>
+            <group if="$(arg camera_enabled)">
+                <node name="chess_rviz" pkg="rviz" type="rviz" respawn="false" args="-d $(find chesslab_setup)/config/chesslab_simple_cameras.rviz" output="screen"/>
+            </group>
+        </group>
+        
+        <!-- services -->
+        <group if="$(arg load_services)">
+            <node name="chesslab_setup_node" pkg="chesslab_setup" type="chesslab_setup_node" output="screen" />
+            <node name="kautham_node" pkg="kautham" type="kautham-rosnode" launch-prefix="xterm -e" />
+            <node name="ur3ik_server" pkg="ur3ik" type="urik-node" />
+            <node pkg="ff" name="ff_node_service" type="ff_node_service" respawn="true" />
+        </group>
+</launch>

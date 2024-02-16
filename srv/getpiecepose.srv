@@ -1,0 +1,4 @@
+string id1
+string id2
+---
+geometry_msgs/TransformStamped stampedpose

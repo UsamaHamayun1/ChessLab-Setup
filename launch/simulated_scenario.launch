@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Launch file to load the robots and cameras in simulation and show in rviz-->
+    <include file="$(find chesslab_setup)/launch/new-dashboard.launch.xml">
+            <arg name="load_sim" value="true" />
+            <arg name="joint_gui_controller" default="true" />
+            <arg name="paused" default="true" />
+            <arg name="show_rviz" value="true" />
+            <arg name="team_A_enabled" value="true" />
+            <arg name="camera_enabled" value="true" />
+            <arg name="load_aruco_detector" value="true" />
+            <!--arg name="load_action_clients" value="false" /-->
+    </include>
+    
+<!--     <node name="follow_traj_wrap_server" pkg="chesslab_setup" type="follow_traj_wrap_server" output="screen"/> -->
+     <node name="ur3_node" pkg="chesslab_setup" type="ur3_node" output="screen"/>
+    <node name="follow_traj_client" pkg="chesslab_setup" type="follow_traj_client" output="screen"/>
+    <node name="singlePoseOrient" pkg="chesslab_setup" type="singlePoseOrient" output="screen"/>
+    <node name="userCommands" pkg="chesslab_setup" type="userCommands" output="screen"/>
+    <node name="mainNode" pkg="chesslab_setup" type="mainNode" output="screen"/>
+</launch>

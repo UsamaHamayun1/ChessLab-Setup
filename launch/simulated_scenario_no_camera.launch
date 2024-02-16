@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Launch file to load the robots in simulation ond control them with the gui -->
+    <include file="$(find chesslab_setup)/launch/new-dashboard.launch.xml">
+            <arg name="joint_gui_controller" default="true" />
+            <arg name="load_sim" default="true" />
+            <arg name="team_A_enabled" value="true" />
+            <arg name="controller_with_gripper" value="false" />
+            
+        <!-- <arg name="show_rviz" value="true" /-->
+    </include>
+    
+    <node name="follow_traj_wrap_server" pkg="chesslab_setup" type="follow_traj_wrap_server" output="screen"/>
+    <node name="follow_traj_client" pkg="chesslab_setup" type="follow_traj_client" output="screen"/>
+    
+</launch>

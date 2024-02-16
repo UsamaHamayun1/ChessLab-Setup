@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Launch file to load the cameras in simulation show images in rviz-->
+    <include file="$(find chesslab_setup)/launch/new-dashboard.launch.xml">
+        <arg name="camera_enabled" default="true" />
+        <arg name="load_sim" value="true" />
+        <arg name="show_rviz" value="true" />
+        <!-- no need to start gazebo in paused mode - no robots simulated-->
+        <arg name="paused" default="false" />        
+    </include>
+</launch>

@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Launch file to display (only) the robots in rviz -->
+    <include file="$(find chesslab_setup)/launch/new-dashboard.launch.xml">
+        <arg name="joint_gui" value="true" />     
+        <arg name="show_rviz" default="true" />           
+        <arg name="team_A_enabled" value="true" />
+    </include>
+</launch>

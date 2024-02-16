@@ -1,0 +1,10 @@
+  joint_state_controller:
+    type: joint_state_controller/JointStateController
+    publish_rate: 100
+
+  gripper_controller:
+    type: position_controllers/GripperActionController
+    joint: team_A_gripper_right_driver_joint
+    #stall_timeout: 2.0
+    #stall_velocity_threshold: 0.1
+    #goal_tolerance: 0.01

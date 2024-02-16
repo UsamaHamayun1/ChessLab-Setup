@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Launch file to launch the planning services. Shows complete scene in rviz -->
+    <include file="$(find chesslab_setup)/launch/new-dashboard.launch.xml">
+        <arg name="show_rviz" value="true" />
+        <arg name="load_services" value="true" />
+        <arg name="team_A_enabled" default="true" />
+        <!--arg name="joint_gui" value="true" /-->
+    </include>
+</launch>

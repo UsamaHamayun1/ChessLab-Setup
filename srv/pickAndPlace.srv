@@ -1,0 +1,6 @@
+geometry_msgs/Pose poseInitial
+bool orientationInitial
+geometry_msgs/Pose poseFinal
+bool orientationFinal
+string name
+---

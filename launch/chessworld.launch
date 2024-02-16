@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+        <arg name="load_sim" default="true" />
+        <arg name="paused" default="false" />    
+        
+        <!-- configuration of the simulation -->
+        <group if="$(arg load_sim)">
+            <include file="$(find gazebo_ros)/launch/empty_world.launch">
+                <arg name="world_name" value="$(find chesslab_setup)/worlds/flat_chesslab.world"/>
+                <arg name="paused" value="$(arg paused)" />
+                <arg name="gui" value="true" />
+            </include> 
+        </group>
+</launch>
