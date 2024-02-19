@@ -118,7 +118,11 @@ rosservice call /chesslab_setup/userCommands "KBL --"
 
 	The final set of configurations is sent to the robot.
 
+
+
 The final workflow of the program can be seen in the next figure
+
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/0GHr0PB0Luc/0.jpg)](https://www.youtube.com/watch?v=0GHr0PB0Luc)
 
 ![Diagram](ReadmeImages/Flowchart.png) 
 
